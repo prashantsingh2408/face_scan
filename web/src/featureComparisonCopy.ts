@@ -37,11 +37,11 @@ export const FEATURE_COMPARISON: Partial<Record<string, FeatureComparisonConfig>
     variant: "lips",
   },
   skin_appearance: {
-    title: "Glow & tone vs what cameras usually capture",
+    title: "Glow & tone: why we show a matte ↔ luminous bar",
     bullets: [
-      "Even skin in photos often still shows mild redness or shine from light angle.",
-      "Reference gradient suggests matte vs luminous extremes — most people are in between.",
-      "One JPEG cannot capture true undertone the way multi-angle lighting studies can.",
+      "The gradient is not a meter or a clinical score — it is only a visual anchor for everyday words (flat/matte finish vs reflective glow). Your photo does not measure oil or hydration.",
+      "Real takeaway for this scan is the text fields under this section (glow radiance, tone uniformity). The bar helps interpret those phrases; lighting and camera angle change shine far more than skincare in one still.",
+      "Undertone and redness are easy to misread from a single JPEG; compare several photos in different light if you track changes over time.",
     ],
     variant: "skin_tone",
   },
@@ -74,4 +74,36 @@ export function readFaceShapeClassification(report: Record<string, unknown>): st
   if (!fs || typeof fs !== "object") return undefined;
   const cl = (fs as Record<string, unknown>).classification;
   return typeof cl === "string" ? cl : undefined;
+}
+
+export function readSkinAppearanceGlow(report: Record<string, unknown>): {
+  glow_radiance?: string;
+  tone_uniformity?: string;
+} {
+  const sa = report.skin_appearance;
+  if (!sa || typeof sa !== "object" || Array.isArray(sa)) return {};
+  const o = sa as Record<string, unknown>;
+  return {
+    glow_radiance: typeof o.glow_radiance === "string" ? o.glow_radiance : undefined,
+    tone_uniformity: typeof o.tone_uniformity === "string" ? o.tone_uniformity : undefined,
+  };
+}
+
+/**
+ * Rough 0–100 position (left = matte, right = luminous) from report wording only — illustrative, not measured.
+ */
+export function inferGlowSpectrumHint(glowRadiance: string | undefined): number | null {
+  if (!glowRadiance?.trim()) return null;
+  const s = glowRadiance.toLowerCase();
+  const luminous =
+    /\bluminous\b|\bdewy\b|\bglowy\b|\breflective\b|\bglossy\b|\boily-looking\b|\bshine\b/.test(s);
+  const matte = /\bmatte\b|\bflat\b|\bdull\b/.test(s);
+  if (luminous && matte) return 52;
+  if (luminous) return 84;
+  if (matte) {
+    if (/highlight|sheen|t-zone|t zone|forehead/.test(s)) return 36;
+    return 24;
+  }
+  if (/highlight|sheen|specular|gleam/.test(s)) return 58;
+  return null;
 }

@@ -43,6 +43,54 @@ function formatValue(v: unknown): string {
   return "";
 }
 
+function isHttpUrlString(v: unknown): v is string {
+  return typeof v === "string" && /^https?:\/\//i.test(v.trim());
+}
+
+function isReferenceUrlKey(k: string): boolean {
+  return k === "read_standard" || k === "read_primary_study" || k.endsWith("_url");
+}
+
+function isRatingStandardsLink(x: unknown): x is { label: string; url: string } {
+  if (!x || typeof x !== "object") return false;
+  const o = x as Record<string, unknown>;
+  return typeof o.label === "string" && typeof o.url === "string" && /^https?:\/\//i.test(o.url.trim());
+}
+
+function RatingStandardsLinks({ links }: { links: unknown }) {
+  if (!Array.isArray(links) || !links.every(isRatingStandardsLink)) return null;
+  return (
+    <details className="report-note-details report-note-details--standards">
+      <summary className="report-note-summary">
+        <span className="report-note-summary-icon" aria-hidden>
+          <IconInfo size={18} />
+        </span>
+        Rating scales — read the standards
+      </summary>
+      <div className="report-note-body">
+        <p className="report-standards-links-lead">
+          Uses the same info icon row as “About this report” — tap to expand. Links open the papers behind POH grading,
+          Fitzpatrick phototype, IGA acne scores, and Glogau photoaging. Report numbers are still demo placeholders
+          until models measure your image.
+        </p>
+        <ul className="report-standards-link-list">
+          {links.map((item, i) => (
+            <li key={`${item.url}-${i}`}>
+              <a href={item.url.trim()} target="_blank" rel="noopener noreferrer" className="report-standards-link">
+                {item.label}
+                <span className="report-standards-link-suffix" aria-hidden>
+                  {" "}
+                  ↗
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </details>
+  );
+}
+
 function humanKey(k: string): string {
   return k
     .split("_")
@@ -120,7 +168,15 @@ function Rows({ data, depth }: { data: Record<string, unknown>; depth: number })
         return (
           <div key={k} className="kv-row">
             <span className="kv-label">{humanKey(k)}</span>
-            <span className="kv-value">{formatValue(v)}</span>
+            <span className="kv-value">
+              {isReferenceUrlKey(k) && isHttpUrlString(v) ? (
+                <a href={v.trim()} target="_blank" rel="noopener noreferrer" className="report-value-link">
+                  Open reference ↗
+                </a>
+              ) : (
+                formatValue(v)
+              )}
+            </span>
           </div>
         );
       })}
@@ -279,26 +335,33 @@ export function ReportView({
         </p>
       )}
       <div className="report-section-toolbar" role="toolbar" aria-label="Report sections">
-        <button type="button" className="btn-report-outline" onClick={expandAllSections}>
-          Expand all sections
-        </button>
-        <button type="button" className="btn-report-outline" onClick={collapseAllSections}>
-          Collapse all
-        </button>
+        <div className="report-section-toolbar-inner">
+          <button type="button" className="btn-report-outline" onClick={expandAllSections}>
+            Expand all
+          </button>
+          <button type="button" className="btn-report-outline" onClick={collapseAllSections}>
+            Collapse all
+          </button>
+        </div>
+        <p className="report-toolbar-hint">Topics start closed — open one at a time, or expand all.</p>
       </div>
       <div className="report-section-list" ref={sectionListRef}>
+        <RatingStandardsLinks links={report.rating_standards_links} />
         {disclaimer && (
-          <div className="report-disclaimer report-disclaimer--full" role="note">
-            <span className="report-disclaimer-icon" aria-hidden>
-              <IconInfo size={20} />
-            </span>
-            <span>{disclaimer}</span>
-          </div>
+          <details className="report-note-details">
+            <summary className="report-note-summary">
+              <span className="report-note-summary-icon" aria-hidden>
+                <IconInfo size={18} />
+              </span>
+              About this report (demo / template)
+            </summary>
+            <div className="report-note-body">{disclaimer}</div>
+          </details>
         )}
-        {SECTION_ORDER.map(({ key, title }, i) => {
+        {SECTION_ORDER.map(({ key, title }) => {
           const block = report[key];
           if (block === undefined || block === null) return null;
-          const defaultOpen = key === "improvement_playbook" || i < 1;
+          const defaultOpen = key === "improvement_playbook";
           if (typeof block !== "object" || Array.isArray(block)) {
             return (
               <details key={key} className="report-section" open={defaultOpen}>

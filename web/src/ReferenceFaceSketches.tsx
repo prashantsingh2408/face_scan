@@ -1,10 +1,12 @@
 /** Abstract SVG references — not photographs of real individuals. */
 
+import { useId } from "react";
+
 export function SketchUnderEyeReference() {
   return (
     <svg
-      className="feature-compare-svg"
-      viewBox="0 0 220 130"
+      className="feature-compare-svg feature-compare-svg--under-eye"
+      viewBox="0 0 220 156"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
@@ -25,8 +27,18 @@ export function SketchUnderEyeReference() {
         strokeWidth="1.4"
         strokeDasharray="4 3"
       />
-      <text x="110" y="118" textAnchor="middle" fill="rgba(140,155,180,0.85)" fontSize="9" fontFamily="system-ui,sans-serif">
-        Typical shadow / hollow zones (illustrative)
+      <text
+        textAnchor="middle"
+        fill="rgba(140,155,180,0.9)"
+        fontSize="8"
+        fontFamily="system-ui,sans-serif"
+      >
+        <tspan x="110" y="133">
+          Typical shadow / hollow zones
+        </tspan>
+        <tspan x="110" y="146">
+          (illustrative)
+        </tspan>
       </text>
     </svg>
   );
@@ -137,21 +149,58 @@ export function SketchLipProfiles() {
   );
 }
 
-export function SketchSkinGlowSpectrum() {
+export function SketchSkinGlowSpectrum({ markerPercent }: { markerPercent?: number | null }) {
+  const gid = useId().replace(/:/g, "");
+  const gradId = `skinGlowGrad-${gid}`;
+  const barLeft = 10;
+  const barWidth = 180;
+  const marker =
+    markerPercent != null && Number.isFinite(markerPercent)
+      ? barLeft + (Math.min(100, Math.max(0, markerPercent)) / 100) * barWidth
+      : null;
+
   return (
-    <svg className="feature-compare-svg" viewBox="0 0 200 56" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <svg
+      className="feature-compare-svg"
+      viewBox="0 0 200 62"
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Illustrative scale from matte finish on the left to luminous reflection on the right"
+    >
       <defs>
-        <linearGradient id="skinGlowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="rgba(90,95,110,0.9)" />
           <stop offset="50%" stopColor="rgba(140,155,185,0.55)" />
           <stop offset="100%" stopColor="rgba(230,235,255,0.35)" />
         </linearGradient>
       </defs>
-      <rect x="10" y="18" width="180" height="18" rx="9" fill="url(#skinGlowGrad)" stroke="rgba(255,255,255,0.12)" />
-      <text x="28" y="50" fill="rgba(150,165,190,0.85)" fontSize="8" fontFamily="system-ui,sans-serif">
+      <rect
+        x={barLeft}
+        y="18"
+        width={barWidth}
+        height="18"
+        rx="9"
+        fill={`url(#${gradId})`}
+        stroke="rgba(255,255,255,0.12)"
+      />
+      {marker != null ? (
+        <>
+          <line
+            x1={marker}
+            x2={marker}
+            y1="14"
+            y2="40"
+            stroke="rgba(255,220,160,0.95)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <circle cx={marker} cy="27" r="3.5" fill="rgba(255,245,220,0.95)" stroke="rgba(40,44,58,0.5)" strokeWidth="1" />
+        </>
+      ) : null}
+      <text x="28" y="54" fill="rgba(150,165,190,0.85)" fontSize="8" fontFamily="system-ui,sans-serif">
         Matte
       </text>
-      <text x="164" y="50" textAnchor="end" fill="rgba(150,165,190,0.85)" fontSize="8" fontFamily="system-ui,sans-serif">
+      <text x="172" y="54" textAnchor="end" fill="rgba(150,165,190,0.85)" fontSize="8" fontFamily="system-ui,sans-serif">
         Luminous
       </text>
     </svg>

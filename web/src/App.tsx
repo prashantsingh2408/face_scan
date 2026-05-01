@@ -266,8 +266,8 @@ export default function App() {
         <header className="page-intro">
           <h1 className="headline">Scan your face</h1>
           <p className="lead">
-            Use a clear, front-facing photo in good light. After you upload, we analyze it automatically — then
-            open each section below. Photo previews use on-device face detection when available.
+            Front-facing photo, good light. After upload, results appear below — one topic at a time. Face crops use
+            on-device detection when available.
           </p>
         </header>
 
@@ -422,7 +422,10 @@ export default function App() {
               {succeeded && (
                 <div className="report-panel" ref={reportPanelRef}>
                   <div className="report-panel-head">
-                    <h2 className="report-panel-title">Your analysis</h2>
+                    <div>
+                      <h2 className="report-panel-title">Your analysis</h2>
+                      <p className="report-panel-sub">Open sections as you go — details stay tucked away until you need them.</p>
+                    </div>
                     {analysisVersion && <span className="report-version">{analysisVersion}</span>}
                   </div>
                   {!previewUrl && (

@@ -2,7 +2,29 @@
 
 export const DEFAULT_FACEOLOGY_REPORT: Record<string, unknown> = {
   disclaimer:
-    "Demo report: all sections below match the Faceology product template. Values are illustrative until CV/ML + video pipelines are connected.",
+    "Demo report: numeric fields mirror common ordinal scales (POH grade, IGA acne, Fitzpatrick phototype, Glogau) for clarity — still illustrative until models measure your photo.",
+  rating_standards_links: [
+    {
+      label: "Periorbital hyperpigmentation classification — Fatin et al., Skin Res Technol (2020)",
+      url: "https://doi.org/10.1111/srt.12831",
+    },
+    {
+      label: "What causes dark circles under the eyes? — Freitag & Cestari, J Cosmet Dermatol (2007)",
+      url: "https://doi.org/10.1111/j.1473-2165.2007.00324.x",
+    },
+    {
+      label: "Fitzpatrick sun-reactive skin types I–VI — Arch Dermatol (1988)",
+      url: "https://doi.org/10.1001/archderm.1988.01670300158022",
+    },
+    {
+      label: "Investigator Global Assessment (IGA) for acne — NCBI Bookshelf overview",
+      url: "https://www.ncbi.nlm.nih.gov/books/NBK519508/",
+    },
+    {
+      label: "Glogau photoaging scale — Semin Cutan Med Surg (1996)",
+      url: "https://doi.org/10.1016/S1085-5629(96)80034-2",
+    },
+  ],
   source_image: {
     format: "—",
     bytes: 0,
@@ -37,17 +59,54 @@ export const DEFAULT_FACEOLOGY_REPORT: Record<string, unknown> = {
       assessment: "Possible mild dehydration with surface oil (typical combo pattern).",
       note: "Refine with questionnaire + TEWL proxy when sensors/models exist.",
     },
+    fitzpatrick_phototype: {
+      roman_numeral_estimate: "IV",
+      sunburn_and_tan_behavior: "Burns minimally, tans readily.",
+      reference:
+        "Fitzpatrick L. Sun-reactive skin types I–VI. Arch Dermatol 1988;124(6):869-871.",
+      read_standard: "https://doi.org/10.1001/archderm.1988.01670300158022",
+      reliability_note: "Phototype cannot be validated from one selfie — clinician / questionnaire preferred.",
+    },
   },
   blemishes_imperfections: {
-    acne: { types_suspected: ["papules", "comedones"], severity: "mild (illustrative)" },
+    acne: {
+      types_suspected: ["papules", "comedones"],
+      severity_word: "mild",
+      investigators_global_assessment_0_to_5: 2,
+      iga_label: "Mild",
+      iga_reference:
+        "IGA (Investigator Global Assessment) 0–5 — standard acne trial endpoint (FDA / consensus outcomes).",
+      read_standard: "https://www.ncbi.nlm.nih.gov/books/NBK519508/",
+    },
     pigmentation: ["post-inflammatory marks (possible)", "freckles (sun-exposed)"],
     redness_inflammation: "mild diffuse redness on cheeks (illustrative)",
     texture: { roughness: "low", pores: "moderate on nose", scarring: "none obvious" },
   },
   dark_circles_under_eye: {
     severity: "mild (illustrative)",
+    severity_numeric: {
+      periorbital_hyperpigmentation_grade_0_to_4: 1,
+      grade_anchor_text:
+        "Mild: slight duskiness limited to thin skin over infraorbital rim.",
+      shadow_darkening_index_0_to_10: 3.5,
+      shadow_index_note:
+        "0 = none · 10 = severe appearance on this demo rubric (not densitometry or AIRS photonumeric units).",
+    },
     color_contribution: { brown_pigment: 0.35, blue_vascular: 0.45, mixed: 0.2 },
+    color_contribution_percent: {
+      brown_melanin: 35,
+      blue_vascular: 45,
+      mixed_overlap: 20,
+      sums_to_100_percent: true,
+      note: "Partition explains pigment vs vascular emphasis for discussion; clinical dermoscopy separates patterns — demo only.",
+    },
     associated: ["fine under-eye lines"],
+    literature_notes: [
+      "POH clinical grades (0–4 style anchors) summarize intensity/extension for teaching; trials may use photonumeric scales.",
+      "Fatin AM et al. Skin Research and Technology 2020;26(4):564-570. https://doi.org/10.1111/srt.12831",
+      "Photonumeric infraorbital research scales exist; this app does not compute AIRS-style scores from pixels yet.",
+    ],
+    read_primary_study: "https://doi.org/10.1111/srt.12831",
   },
   fat_density_volume: {
     subcutaneous_distribution: "mid-face volume within typical range (visual estimate)",
@@ -58,6 +117,14 @@ export const DEFAULT_FACEOLOGY_REPORT: Record<string, unknown> = {
     firmness_proxy: "moderate (placeholder)",
     sagging_visual: "low",
     note: "Not a clinical pinch test; appearance-only proxy when models ship.",
+    photoaging_glogau: {
+      stage_I_to_IV: "II",
+      stage_description: "Wrinkles in motion (early-moderate).",
+      reference:
+        "Glogau RG. Aesthetic and anatomic analysis of the aging skin. Semin Cutan Med Surg 1996;15(3):134-138.",
+      read_standard: "https://doi.org/10.1016/S1085-5629(96)80034-2",
+      caution: "Stage from a single neutral photo is indicative only.",
+    },
   },
   skin_appearance: {
     glow_radiance: "matte with mild highlight on T-zone",
@@ -102,7 +169,7 @@ export const DEFAULT_FACEOLOGY_REPORT: Record<string, unknown> = {
   },
   scan_process: {
     video_multi_angle: "pending — current dev flow uses one still image",
-    report_depth: "template-aligned structure",
+    report_depth: "template + literature-cited ordinal scales (demo assignments until CV measures)",
     three_d_model: "pending — mesh export after reconstruction pipeline",
   },
   improvement_playbook: {
@@ -224,6 +291,18 @@ function withImprovementPlaybookFallback(
   return { ...report, improvement_playbook: base.improvement_playbook };
 }
 
+function withRatingStandardsLinksFallback(
+  report: Record<string, unknown>,
+  base: Record<string, unknown>,
+): Record<string, unknown> {
+  if (report.rating_standards_links != null) return report;
+  return { ...report, rating_standards_links: base.rating_standards_links };
+}
+
+function mergeReportDefaults(report: Record<string, unknown>, base: Record<string, unknown>): Record<string, unknown> {
+  return withRatingStandardsLinksFallback(withImprovementPlaybookFallback(report, base), base);
+}
+
 export function resolveFaceologyReport(results: unknown): Record<string, unknown> {
   const base = cloneReport(DEFAULT_FACEOLOGY_REPORT);
   if (!results || typeof results !== "object") return base;
@@ -234,9 +313,9 @@ export function resolveFaceologyReport(results: unknown): Record<string, unknown
     if (report.overall_face_shape_geometry != null) {
       const img = report.source_image;
       if (typeof img === "object" && img !== null) {
-        return withImprovementPlaybookFallback({ ...report }, base);
+        return mergeReportDefaults({ ...report }, base);
       }
-      return withImprovementPlaybookFallback({ ...report, source_image: base.source_image }, base);
+      return mergeReportDefaults({ ...report, source_image: base.source_image }, base);
     }
   }
   const legacyImg = r.image;
