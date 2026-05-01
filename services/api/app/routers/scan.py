@@ -80,7 +80,7 @@ async def _process_face_job(job_id: str) -> None:
         "sha256_prefix": digest,
     }
     results = {
-        "analysis_version": "dev-0.2-template",
+        "analysis_version": "dev-0.3-metrics-lit",
         "faceology_report": build_demo_face_report(image_meta),
     }
 

@@ -1,18 +1,35 @@
 """Structured demo report aligned with Faceology Face Scan template.
 
 Scores are placeholders for UI/dev until real CV/ML pipelines populate fields.
+Ordinal rubrics (POH grade, IGA, Fitzpatrick, Glogau) cite common dermatology references for transparency.
 """
 
 from __future__ import annotations
 
+from app.metric_standards import (
+    FITZPATRICK_ANCHORS,
+    FITZPATRICK_REF,
+    GLOGAU_REF,
+    GLOGAU_STAGES,
+    IGA_ACNE_ANCHORS,
+    IGA_REF,
+    INFRAORBITAL_SCALE_NOTE,
+    POH_CLINICAL_GRADE_ANCHORS,
+    POH_LITERATURE,
+    RATING_STANDARD_LINKS,
+)
+
 
 def build_demo_face_report(image: dict) -> dict:
     """Return nested dict matching product template sections."""
+    _ph_grade = 1
     return {
         "disclaimer": (
-            "Demo report: labels and sections match the Faceology product template; "
-            "values are illustrative until geometry/skin/video models are connected."
+            "Demo report: sections follow the Face scan product template. "
+            "Numeric fields mirror published ordinal scales (POH grade, IGA acne, Fitzpatrick phototype, Glogau photoaging) "
+            "for clarity — values are still illustrative until models densitometry-measure your photo."
         ),
+        "rating_standards_links": [dict(x) for x in RATING_STANDARD_LINKS],
         "source_image": image,
         "overall_face_shape_geometry": {
             "face_shape": {
@@ -42,17 +59,55 @@ def build_demo_face_report(image: dict) -> dict:
                 "assessment": "Possible mild dehydration with surface oil (typical combo pattern).",
                 "note": "Refine with questionnaire + TEWL proxy when sensors/models exist.",
             },
+            "fitzpatrick_phototype": {
+                "roman_numeral_estimate": "IV",
+                "sunburn_and_tan_behavior": FITZPATRICK_ANCHORS["IV"],
+                "reference": FITZPATRICK_REF,
+                "read_standard": "https://doi.org/10.1001/archderm.1988.01670300158022",
+                "reliability_note": "Phototype cannot be validated from one selfie — clinician / questionnaire preferred.",
+            },
         },
         "blemishes_imperfections": {
-            "acne": {"types_suspected": ["papules", "comedones"], "severity": "mild"},
+            "acne": {
+                "types_suspected": ["papules", "comedones"],
+                "severity_word": "mild",
+                "investigators_global_assessment_0_to_5": 2,
+                "iga_label": IGA_ACNE_ANCHORS[2],
+                "iga_reference": IGA_REF,
+                "read_standard": "https://www.ncbi.nlm.nih.gov/books/NBK519508/",
+            },
             "pigmentation": ["post-inflammatory marks (possible)", "freckles (sun-exposed)"],
             "redness_inflammation": "mild diffuse redness on cheeks",
             "texture": {"roughness": "low", "pores": "moderate on nose", "scarring": "none obvious"},
         },
         "dark_circles_under_eye": {
             "severity": "mild",
+            "severity_numeric": {
+                "periorbital_hyperpigmentation_grade_0_to_4": _ph_grade,
+                "grade_anchor_text": POH_CLINICAL_GRADE_ANCHORS[_ph_grade],
+                "shadow_darkening_index_0_to_10": 3.5,
+                "shadow_index_note": (
+                    "0 = none · 10 = severe appearance on this demo rubric (not densitometry or AIRS photonumeric units)."
+                ),
+            },
             "color_contribution": {"brown_pigment": 0.35, "blue_vascular": 0.45, "mixed": 0.2},
+            "color_contribution_percent": {
+                "brown_melanin": 35,
+                "blue_vascular": 45,
+                "mixed_overlap": 20,
+                "sums_to_100_percent": True,
+                "note": (
+                    "Partition explains pigment vs vascular emphasis for discussion; "
+                    "clinical dermoscopy separates patterns — demo only."
+                ),
+            },
             "associated": ["fine under-eye lines"],
+            "literature_notes": [
+                "POH clinical grades (0–4 style anchors) summarize intensity/extension for teaching; trials may use photonumeric scales.",
+                *POH_LITERATURE,
+                INFRAORBITAL_SCALE_NOTE,
+            ],
+            "read_primary_study": "https://doi.org/10.1111/srt.12831",
         },
         "fat_density_volume": {
             "subcutaneous_distribution": "mid-face volume within typical range (visual estimate)",
@@ -63,6 +118,13 @@ def build_demo_face_report(image: dict) -> dict:
             "firmness_proxy": "moderate (placeholder)",
             "sagging_visual": "low",
             "note": "Not a clinical pinch test; appearance-only proxy when models ship.",
+            "photoaging_glogau": {
+                "stage_I_to_IV": "II",
+                "stage_description": GLOGAU_STAGES["II"],
+                "reference": GLOGAU_REF,
+                "read_standard": "https://doi.org/10.1016/S1085-5629(96)80034-2",
+                "caution": "Stage from a single neutral photo is indicative only.",
+            },
         },
         "skin_appearance": {
             "glow_radiance": "matte with mild highlight on T-zone",
@@ -107,7 +169,7 @@ def build_demo_face_report(image: dict) -> dict:
         },
         "scan_process": {
             "video_multi_angle": "pending — current dev flow uses one still image",
-            "report_depth": "template-aligned structure",
+            "report_depth": "template + literature-cited ordinal scales (demo assignments until CV measures)",
             "three_d_model": "pending — mesh export after reconstruction pipeline",
         },
         "improvement_playbook": {
