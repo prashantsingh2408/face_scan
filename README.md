@@ -9,7 +9,6 @@ Web UI + **Python services** for face/skin pipelines (geometry, models, Groq sug
 - `web/` — Vite + React + TypeScript; proxies `/api` → FastAPI on port 8000.
 - `services/api/` — FastAPI (`/v1/scan/face`, Groq `/v1/recommendations/faceology`, `/v1/chat/face-report`, etc.).
 - `services/worker/` — placeholder for Redis/RQ + job workers.
-- `youcam_probe/` — optional **YouCam (Perfect Corp)** API probe script; has its own `.git` from the old standalone repo (nested repo).
 
 ## Run locally
 
@@ -49,5 +48,3 @@ Optional `services/api/.env` (see `.env.example`):
 FACEOLOGY_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 GROQ_API_KEY=...   # optional AI suggestions
 ```
-
-**YouCam probe:** from repo root, `cd youcam_probe` and follow `youcam_probe/README.md`.
